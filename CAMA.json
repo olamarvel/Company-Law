@@ -1,0 +1,165 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "0d5d70a6-790d-4ae0-84de-d5b5189b734a",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "collection": "cama_laws",
+        "options": {
+          "limit": 1
+        },
+        "query": "{\"has_been_used\": false}"
+      },
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1.5,
+      "position": [
+        224,
+        0
+      ],
+      "id": "1f6205c8-53ae-4506-96f5-68fb2a3bdbac",
+      "name": "Find documents",
+      "credentials": {
+        "mongoDb": {
+          "id": "HYHDHOKTvkxqSar3",
+          "name": "MongoDB account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=LEGAL PROVISION TO EXPLAIN: Act: {{ $json.act_name }} Section: {{ $json.section }} Text: {{ $json.text }}",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "=You are explaining Nigerian corporate law to a Nigerian entrepreneur.\nUsing ONLY the legal provision provided:\n1. Explain what it means in plain English.\n2. Give a practical example involving a Nigerian business.\n3. Give one memorable \"Did you know?\" fact.\n4. Do not invent legal requirements.\n5. Keep it concise and formatted for Telegram.\n\nCRITICAL FORMATTING RULE: You must format your response using ONLY Telegram-supported HTML tags (<b> for bold, <i> for italic). Do NOT use any Markdown characters like asterisks (*), hashtags (#), or dashes (-). Telegram will crash if you use Markdown."
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        672,
+        0
+      ],
+      "id": "712883d6-8a8b-48c6-82a4-22876d12bd16",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-3.1-flash-lite",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.2,
+      "position": [
+        384,
+        208
+      ],
+      "id": "fecc7355-7c90-43f9-9939-18ea94c1b9d7",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "F30Sfoe7YyiXRRSB",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "5699115409",
+        "text": "={{ $json.text }}",
+        "additionalFields": {
+          "parse_mode": "HTML"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1040,
+        0
+      ],
+      "id": "720375fe-3ed9-406c-890a-3361b59e9505",
+      "name": "Send a text message",
+      "webhookId": "6f59c441-3883-49eb-bc1a-2631cc7e374e",
+      "credentials": {
+        "telegramApi": {
+          "id": "94CDf4ZInAgIJSU4",
+          "name": "Telegram account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Find documents",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find documents": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "4498700b-3dad-4729-a3ba-94b3fe4602b0",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "80f47e0e91954884bb6fad0c2519ce9904573be55f88739e0fd8d7f3e388651b"
+  },
+  "nodeGroups": [],
+  "id": "nQUW1De9816sooTG",
+  "tags": []
+}
